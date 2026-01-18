@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
@@ -80,9 +81,11 @@ export default function Navbar() {
                   }}
                 >
                   {session.user.image && (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt={session.user.name || 'Usuario'}
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full border-3 border-white shadow-md"
                     />
                   )}

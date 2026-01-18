@@ -2,23 +2,23 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { GiftIcon, BookIcon, ToyIcon, FeriaIcon, GameIcon, StarIcon } from '@/components/icons/StumbleIcons';
 
-export default function Home() {
-  const [particles, setParticles] = useState<Array<{ id: number; emoji: string; left: string; delay: number }>>([]);
+// Generar partículas fuera del componente para evitar re-renders
+const generateParticles = () => {
+  const emojis = ['🎈', '⭐', '🎁', '🎪', '🎡', '🎨', '🧸', '📚'];
+  return Array.from({ length: 8 }, (_, i) => ({
+    id: i,
+    emoji: emojis[i],
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 80}%`,
+    delay: Math.random() * 4
+  }));
+};
 
-  useEffect(() => {
-    // Crear partículas flotantes
-    const emojis = ['🎈', '⭐', '🎁', '🎪', '🎡', '🎨', '🧸', '📚'];
-    const newParticles = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      emoji: emojis[i],
-      left: `${Math.random() * 100}%`,
-      delay: Math.random() * 4
-    }));
-    setParticles(newParticles);
-  }, []);
+export default function Home() {
+  const [particles] = useState(generateParticles);
 
   return (
     <div className="min-h-screen p-8 relative">
@@ -29,7 +29,7 @@ export default function Home() {
           className="floating-emoji"
           style={{
             left: particle.left,
-            top: `${Math.random() * 80}%`,
+            top: particle.top,
           }}
           animate={{
             y: [0, -30, 0],
@@ -123,7 +123,7 @@ export default function Home() {
                 <p className="text-gray-700 text-lg font-bold mb-4">
                   Gestiona y organiza las ferias de pulgas del condominio
                 </p>
-                <div className="inline-block px-6 py-3 bg-gradient-to-r from-pink-500 to-pink-400 rounded-full text-white font-black text-sm border-3 border-white shadow-lg">
+                <div className="inline-block px-6 py-3 bg-linear-to-r from-pink-500 to-pink-400 rounded-full text-white font-black text-sm border-3 border-white shadow-lg">
                   Ver todas →
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function Home() {
                 <p className="text-gray-700 text-lg font-bold mb-4">
                   Explora juguetes, libros y tesoros disponibles
                 </p>
-                <div className="inline-block px-6 py-3 bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full text-white font-black text-sm border-3 border-white shadow-lg">
+                <div className="inline-block px-6 py-3 bg-linear-to-r from-cyan-500 to-cyan-400 rounded-full text-white font-black text-sm border-3 border-white shadow-lg">
                   Explorar →
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function Home() {
           </p>
           <div className="grid md:grid-cols-3 gap-6 mt-6">
             <motion.div 
-              className="text-center p-6 bg-gradient-to-br from-pink-400 to-pink-500 rounded-3xl border-4 border-white shadow-xl"
+              className="text-center p-6 bg-linear-to-br from-pink-400 to-pink-500 rounded-3xl border-4 border-white shadow-xl"
               whileHover={{ scale: 1.08, rotate: 3 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
@@ -208,7 +208,7 @@ export default function Home() {
               }}>Juguetes</p>
             </motion.div>
             <motion.div 
-              className="text-center p-6 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-3xl border-4 border-white shadow-xl"
+              className="text-center p-6 bg-linear-to-br from-yellow-400 to-orange-400 rounded-3xl border-4 border-white shadow-xl"
               whileHover={{ scale: 1.08, rotate: -3 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
@@ -224,7 +224,7 @@ export default function Home() {
               }}>Libros</p>
             </motion.div>
             <motion.div 
-              className="text-center p-6 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-3xl border-4 border-white shadow-xl"
+              className="text-center p-6 bg-linear-to-br from-cyan-400 to-blue-500 rounded-3xl border-4 border-white shadow-xl"
               whileHover={{ scale: 1.08, rotate: 3 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
