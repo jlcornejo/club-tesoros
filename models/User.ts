@@ -48,8 +48,7 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// Índices para mejorar performance
-UserSchema.index({ email: 1 });
-UserSchema.index({ googleId: 1 });
+// Los índices ya están definidos con unique: true en el schema
+// No es necesario declararlos nuevamente
 
 export default models.User || model<IUser>('User', UserSchema);
