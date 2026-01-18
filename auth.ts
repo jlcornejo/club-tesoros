@@ -1,55 +1,54 @@
 import NextAuth from 'next-auth';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
+import type { Adapter } from 'next-auth/adapters';
 import { authConfig } from './auth.config';
 import clientPromise from './lib/mongodb-client';
-import User from './models/User';
 import dbConnect from './lib/mongodb';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  adapter: MongoDBAdapter(clientPromise) as any,
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: 'club-tesoros',
+  }) as Adapter,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === 'google') {
         try {
           await dbConnect();
 
-          // Buscar si el usuario ya existe
-          let existingUser = await User.findOne({ email: user.email });
+          // Buscar usuario en la colección de users del adapter
+          const db = (await clientPromise).db('club-tesoros');
+          const usersCollection = db.collection('users');
+          
+          const existingUser = await usersCollection.findOne({ email: user.email });
 
           if (!existingUser) {
-            // Verificar si es el primer usuario
-            const userCount = await User.countDocuments();
+            // Verificar si es el primer usuario para asignar rol de admin
+            const userCount = await usersCollection.countDocuments();
             const isFirstUser = userCount === 0;
 
-            // Crear nuevo usuario
-            existingUser = await User.create({
-              name: user.name,
-              email: user.email,
-              image: user.image,
-              googleId: profile?.sub,
-              role: isFirstUser ? 'admin' : 'user',
-              emailVerified: new Date(),
-            });
+            // El adapter ya creó el usuario, solo actualizamos el rol
+            await usersCollection.updateOne(
+              { email: user.email },
+              { 
+                $set: { 
+                  role: isFirstUser ? 'admin' : 'user',
+                  emailVerified: new Date(),
+                } 
+              }
+            );
 
-            console.log(`✅ Nuevo usuario creado: ${user.email} (${existingUser.role})`);
+            console.log(`✅ Nuevo usuario creado: ${user.email} (${isFirstUser ? 'admin' : 'user'})`);
+            (user as { role?: string }).role = isFirstUser ? 'admin' : 'user';
           } else {
-            // Actualizar información del usuario si cambió
-            if (existingUser.name !== user.name || existingUser.image !== user.image) {
-              existingUser.name = user.name || existingUser.name;
-              existingUser.image = user.image || existingUser.image;
-              await existingUser.save();
-            }
+            // Usuario existente, obtener su rol
+            (user as { role?: string }).role = (existingUser as { role?: string }).role || 'user';
           }
-
-          // Agregar el rol al objeto user para que esté disponible en el callback jwt
-          (user as any).role = existingUser.role;
-          user.id = existingUser._id.toString();
 
           return true;
         } catch (error) {

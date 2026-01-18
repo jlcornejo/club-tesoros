@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Producto from '@/models/Producto';
 import { auth } from '@/auth';
+import { deleteMultipleImagesFromS3 } from '@/lib/s3-client';
 
 export async function GET(
   request: NextRequest,
@@ -102,11 +103,21 @@ export async function DELETE(
     }
     
     // Verificar que el usuario sea el dueño o sea admin
-    if (producto.userId !== session.user.id && session.user.role !== 'admin') {
+    if (producto.userId !== session.user.id && (session.user as any).role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'No tienes permiso para eliminar este producto' },
         { status: 403 }
       );
+    }
+    
+    // Eliminar imágenes de S3 si existen
+    if (producto.imagenes && producto.imagenes.length > 0) {
+      try {
+        await deleteMultipleImagesFromS3(producto.imagenes);
+      } catch (error) {
+        console.error('Error al eliminar imágenes de S3:', error);
+        // Continuar con la eliminación del producto aunque falle la eliminación de imágenes
+      }
     }
     
     await Producto.findByIdAndDelete(id);

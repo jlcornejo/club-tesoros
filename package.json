@@ -6,13 +6,16 @@
   "author": "Condominio Nueva Toledo",
   "scripts": {
     "dev": "next dev",
+    "dev:https": "node server.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:db": "tsx scripts/test-connection.ts"
+    "test:db": "tsx scripts/test-connection.ts",
+    "generate:certs": "bash scripts/generate-certificates.sh"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
+    "@aws-sdk/client-s3": "^3.971.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

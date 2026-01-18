@@ -3,6 +3,9 @@
 import { useState, useEffect, use } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import AgregarProductoModal from '@/components/AgregarProductoModal';
+import Image from 'next/image';
 
 interface Feria {
   _id: string;
@@ -10,6 +13,7 @@ interface Feria {
   fecha: string;
   descripcion: string;
   estado: 'planificada' | 'activa' | 'finalizada';
+  userId: string;
 }
 
 interface Producto {
@@ -20,13 +24,19 @@ interface Producto {
   precio: number;
   vendedor: string;
   vendido: boolean;
+  imagenes: string[];
+  estado: string;
 }
 
 export default function FeriaDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { data: session } = useSession();
   const [feria, setFeria] = useState<Feria | null>(null);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const isOwner = session?.user && feria?.userId === (session.user as any).id;
 
   useEffect(() => {
     const loadData = async () => {
@@ -85,6 +95,16 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const getEstadoProductoLabel = (estado: string) => {
+    const labels: Record<string, string> = {
+      nuevo: '✨ Nuevo',
+      como_nuevo: '⭐ Como nuevo',
+      usado: '👍 Usado',
+      para_reparar: '🔧 Para reparar',
+    };
+    return labels[estado] || estado;
   };
 
   if (loading) {
@@ -152,9 +172,20 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-3xl font-bold text-white mb-6">
-            🎁 Productos ({productos.length})
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-white">
+              🎁 Productos ({productos.length})
+            </h2>
+            {isOwner && (
+              <button
+                onClick={() => setModalOpen(true)}
+                className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:scale-105"
+                style={{ backgroundColor: 'var(--stumble-orange)' }}
+              >
+                + Agregar Producto
+              </button>
+            )}
+          </div>
 
           {productos.length === 0 ? (
             <div className="stumble-card p-12 text-center">
@@ -174,17 +205,41 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 + index * 0.05 }}
-                  className="stumble-card p-5"
+                  className="stumble-card p-5 hover:scale-105 transition-transform"
                 >
-                  <div className="text-5xl mb-3 text-center">
-                    {getCategoriaEmoji(producto.categoria)}
-                  </div>
+                  {producto.imagenes && producto.imagenes.length > 0 ? (
+                    <div className="relative w-full h-48 mb-3 rounded-xl overflow-hidden">
+                      <Image
+                        src={producto.imagenes[0]}
+                        alt={producto.nombre}
+                        fill
+                        className="object-cover"
+                      />
+                      {producto.imagenes.length > 1 && (
+                        <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
+                          +{producto.imagenes.length - 1}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-5xl mb-3 text-center">
+                      {getCategoriaEmoji(producto.categoria)}
+                    </div>
+                  )}
+                  
                   <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">
                     {producto.nombre}
                   </h3>
                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                     {producto.descripcion}
                   </p>
+                  
+                  <div className="mb-2">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                      {getEstadoProductoLabel(producto.estado)}
+                    </span>
+                  </div>
+                  
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-2xl font-bold" style={{ color: 'var(--stumble-pink)' }}>
                       ${producto.precio}
@@ -203,6 +258,13 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
             </div>
           )}
         </motion.div>
+
+        <AgregarProductoModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          feriaId={id}
+          onProductoCreado={fetchProductos}
+        />
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
+import { CircusTentIcon, AdminIcon, LogoutIcon, ListIcon } from '@/components/icons/NavIcons';
+import { FeriaIcon, GiftIcon } from '@/components/icons/StumbleIcons';
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -13,106 +15,147 @@ export default function Navbar() {
     <motion.nav
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-50"
+      className="bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 border-b-6 border-yellow-600 sticky top-0 z-50 shadow-2xl"
+      style={{
+        boxShadow: '0 6px 0 #CC8800, 0 8px 20px rgba(0, 0, 0, 0.3)'
+      }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-3xl">🎪</span>
-            <span className="text-white font-bold text-xl">Club Tesoros</span>
+        <div className="flex justify-between items-center h-20">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <motion.div
+              animate={{ rotate: [0, -10, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <CircusTentIcon size={48} />
+            </motion.div>
+            <span className="text-white font-black text-2xl group-hover:scale-105 transition-transform"
+              style={{
+                textShadow: '3px 3px 0 rgba(0, 0, 0, 0.4), -1px -1px 0 rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              Club Tesoros
+            </span>
           </Link>
           
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/ferias"
-              className="text-white hover:bg-white/20 px-4 py-2 rounded-lg transition font-semibold"
-            >
-              🎡 Ferias
-            </Link>
-            <Link
-              href="/productos"
-              className="text-white hover:bg-white/20 px-4 py-2 rounded-lg transition font-semibold"
-            >
-              🎁 Productos
-            </Link>
+          <div className="flex items-center space-x-3">
+            <motion.div whileHover={{ scale: 1.08, y: -2 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/ferias"
+                className="text-white font-black px-6 py-3 rounded-full transition bg-pink-500 hover:bg-pink-600 border-3 border-white shadow-lg flex items-center gap-2"
+                style={{
+                  textShadow: '2px 2px 0 rgba(0, 0, 0, 0.3)',
+                  boxShadow: '0 4px 0 #C2185B, 0 6px 15px rgba(0, 0, 0, 0.3)'
+                }}
+              >
+                <FeriaIcon size={24} />
+                <span className="hidden sm:inline">Ferias</span>
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.08, y: -2 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/productos"
+                className="text-white font-black px-6 py-3 rounded-full transition bg-cyan-500 hover:bg-cyan-600 border-3 border-white shadow-lg flex items-center gap-2"
+                style={{
+                  textShadow: '2px 2px 0 rgba(0, 0, 0, 0.3)',
+                  boxShadow: '0 4px 0 #0097A7, 0 6px 15px rgba(0, 0, 0, 0.3)'
+                }}
+              >
+                <GiftIcon size={24} />
+                <span className="hidden sm:inline">Productos</span>
+              </Link>
+            </motion.div>
 
             {status === 'loading' ? (
-              <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
+              <div className="w-12 h-12 rounded-full bg-white/30 animate-pulse border-4 border-white shadow-lg" />
             ) : session ? (
               <div className="relative">
-                <button
+                <motion.button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="flex items-center space-x-2 hover:bg-white/20 px-3 py-2 rounded-lg transition"
+                  className="flex items-center space-x-2 hover:bg-orange-400 px-4 py-2 rounded-full transition border-4 border-white bg-orange-500 shadow-lg"
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    boxShadow: '0 4px 0 #E65100, 0 6px 15px rgba(0, 0, 0, 0.3)'
+                  }}
                 >
                   {session.user.image && (
                     <img
                       src={session.user.image}
                       alt={session.user.name || 'Usuario'}
-                      className="w-8 h-8 rounded-full border-2 border-white"
+                      className="w-10 h-10 rounded-full border-3 border-white shadow-md"
                     />
                   )}
-                  <span className="text-white font-semibold hidden sm:block">
+                  <span className="text-white font-black hidden sm:block" style={{
+                    textShadow: '2px 2px 0 rgba(0, 0, 0, 0.3)'
+                  }}>
                     {session.user.name}
                   </span>
                   {session.user.role === 'admin' && (
-                    <span className="bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-bold">
-                      Admin
+                    <span className="bg-white text-orange-600 text-xs px-3 py-1.5 rounded-full font-black shadow-md border-2 border-orange-600">
+                      ⭐ Admin
                     </span>
                   )}
-                </button>
+                </motion.button>
 
                 {showMenu && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-200"
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="absolute right-0 mt-3 w-56 bg-white rounded-3xl shadow-2xl py-2 border-5 border-gray-800"
                   >
                     <Link
                       href="/mis-ferias"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                      className="flex items-center gap-3 px-5 py-3 text-gray-800 hover:bg-pink-100 transition font-black rounded-2xl mx-2"
                       onClick={() => setShowMenu(false)}
                     >
-                      📋 Mis Ferias
+                      <ListIcon size={24} />
+                      Mis Ferias
                     </Link>
                     <Link
                       href="/mis-productos"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                      className="flex items-center gap-3 px-5 py-3 text-gray-800 hover:bg-cyan-100 transition font-black rounded-2xl mx-2"
                       onClick={() => setShowMenu(false)}
                     >
-                      🎁 Mis Productos
+                      <GiftIcon size={24} />
+                      Mis Productos
                     </Link>
                     {session.user.role === 'admin' && (
                       <>
-                        <div className="border-t border-gray-200 my-2" />
+                        <div className="border-t-3 border-gray-300 my-2" />
                         <Link
                           href="/admin"
-                          className="block px-4 py-2 text-yellow-700 hover:bg-yellow-50 transition font-semibold"
+                          className="flex items-center gap-3 px-5 py-3 text-orange-700 hover:bg-orange-100 transition font-black rounded-2xl mx-2"
                           onClick={() => setShowMenu(false)}
                         >
-                          ⚙️ Panel Admin
+                          <AdminIcon size={24} />
+                          Panel Admin
                         </Link>
                       </>
                     )}
-                    <div className="border-t border-gray-200 my-2" />
+                    <div className="border-t-3 border-gray-300 my-2" />
                     <button
                       onClick={() => {
                         setShowMenu(false);
                         signOut({ callbackUrl: '/' });
                       }}
-                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition"
+                      className="flex items-center gap-3 w-full text-left px-5 py-3 text-red-600 hover:bg-red-100 transition font-black rounded-2xl mx-2"
                     >
-                      🚪 Cerrar Sesión
+                      <LogoutIcon size={24} />
+                      Cerrar Sesión
                     </button>
                   </motion.div>
                 )}
               </div>
             ) : (
-              <Link
-                href="/login"
-                className="stumble-button text-sm"
-              >
-                Iniciar Sesión
-              </Link>
+              <motion.div whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}>
+                <Link
+                  href="/login"
+                  className="stumble-button text-sm"
+                >
+                  Iniciar Sesión
+                </Link>
+              </motion.div>
             )}
           </div>
         </div>

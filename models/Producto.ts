@@ -6,11 +6,12 @@ export interface IProducto {
   descripcion: string;
   categoria: 'juguete' | 'libro' | 'ropa' | 'electronico' | 'otro';
   precio: number;
-  imagen?: string;
+  imagenes: string[]; // URLs de S3
   vendedor: string;
-  userId?: string;
+  userId: string;
   feriaId: string;
   vendido: boolean;
+  estado: 'nuevo' | 'como_nuevo' | 'usado' | 'para_reparar';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -21,11 +22,13 @@ const ProductoSchema = new Schema<IProducto>(
       type: String,
       required: [true, 'El nombre del producto es requerido'],
       trim: true,
+      maxlength: [100, 'El nombre no puede exceder 100 caracteres'],
     },
     descripcion: {
       type: String,
       required: [true, 'La descripción es requerida'],
       trim: true,
+      maxlength: [500, 'La descripción no puede exceder 500 caracteres'],
     },
     categoria: {
       type: String,
@@ -35,10 +38,17 @@ const ProductoSchema = new Schema<IProducto>(
     precio: {
       type: Number,
       required: [true, 'El precio es requerido'],
-      min: 0,
+      min: [0, 'El precio no puede ser negativo'],
     },
-    imagen: {
-      type: String,
+    imagenes: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: function(v: string[]) {
+          return v.length <= 5;
+        },
+        message: 'No puedes subir más de 5 imágenes por producto',
+      },
     },
     vendedor: {
       type: String,
@@ -47,20 +57,32 @@ const ProductoSchema = new Schema<IProducto>(
     },
     userId: {
       type: String,
+      required: [true, 'El ID del usuario es requerido'],
       index: true,
     },
     feriaId: {
       type: String,
       required: [true, 'El ID de la feria es requerido'],
+      index: true,
     },
     vendido: {
       type: Boolean,
       default: false,
+    },
+    estado: {
+      type: String,
+      enum: ['nuevo', 'como_nuevo', 'usado', 'para_reparar'],
+      required: [true, 'El estado del producto es requerido'],
+      default: 'usado',
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Índice compuesto para búsquedas eficientes
+ProductoSchema.index({ feriaId: 1, userId: 1 });
+ProductoSchema.index({ feriaId: 1, vendido: 1 });
 
 export default models.Producto || model<IProducto>('Producto', ProductoSchema);

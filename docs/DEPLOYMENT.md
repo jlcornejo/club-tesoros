@@ -4,6 +4,12 @@
 
 Vercel es la plataforma oficial de Next.js y ofrece deployment gratuito con excelente rendimiento.
 
+### ⚠️ Nota sobre HTTPS
+
+**En desarrollo local**: Verás advertencias de seguridad porque usas `http://localhost:3000` - esto es completamente normal y seguro.
+
+**En Vercel**: ✅ HTTPS automático con certificado SSL válido - sin advertencias, sin configuración adicional.
+
 ### Pasos para Deploy
 
 #### 1. Preparar el Repositorio

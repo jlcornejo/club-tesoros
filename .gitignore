@@ -42,3 +42,8 @@ yarn-error.log*
 next-env.d.ts
 
 .kiro
+
+client_secret*
+
+# SSL certificates for local development
+/certificates/

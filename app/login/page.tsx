@@ -61,15 +61,6 @@ export default function LoginPage() {
         <Link href="/" className="text-sm text-gray-600 hover:underline">
           ← Volver al inicio
         </Link>
-
-        <div className="mt-8 p-4 bg-blue-50 rounded-xl text-left">
-          <p className="text-sm text-gray-700 mb-2">
-            <strong>💡 Primer usuario = Admin</strong>
-          </p>
-          <p className="text-xs text-gray-600">
-            El primer usuario que se registre será automáticamente administrador del sistema.
-          </p>
-        </div>
       </motion.div>
     </div>
   );
