@@ -261,14 +261,13 @@ export default function AgregarProductoModal({
                 <input
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp"
-                  capture="environment"
                   multiple
                   onChange={handleImageChange}
                   className="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-300 focus:border-pink-500 focus:outline-none text-sm"
                   disabled={imagenes.length >= 5}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  {imagenes.length}/5 imágenes • Máximo 5MB por imagen
+                  {imagenes.length}/5 imágenes • Máximo 5MB por imagen • Cámara o galería
                 </p>
               </div>
 
