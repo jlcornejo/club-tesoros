@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Loading from '@/components/Loading';
 
 interface Producto {
   _id: string;
@@ -47,6 +48,55 @@ export default function MisProductosPage() {
     }
   };
 
+  const handleEliminar = async (id: string) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/productos/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        fetchMisProductos();
+      } else {
+        alert('Error al eliminar el producto');
+      }
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      alert('Error al eliminar el producto');
+    }
+  };
+
+  const handleToggleVendido = async (id: string, vendidoActual: boolean) => {
+    const nuevoEstado = !vendidoActual;
+    const mensaje = nuevoEstado 
+      ? '¿Marcar como vendido?' 
+      : '¿Marcar como disponible?';
+
+    if (!confirm(mensaje)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/productos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendido: nuevoEstado }),
+      });
+
+      if (res.ok) {
+        fetchMisProductos();
+      } else {
+        alert('Error al actualizar el estado');
+      }
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+      alert('Error al actualizar el estado');
+    }
+  };
+
   const renderEstrellas = (cantidad: number) => {
     return (
       <div className="flex items-center gap-0.5">
@@ -71,11 +121,7 @@ export default function MisProductosPage() {
   };
 
   if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen p-8 flex items-center justify-center">
-        <div className="text-white text-2xl">Cargando...</div>
-      </div>
-    );
+    return <Loading message="Cargando mis productos" />;
   }
 
   const productosVendidos = productos.filter(p => p.vendido).length;
@@ -181,7 +227,7 @@ export default function MisProductosPage() {
                 <div className="mb-2">
                   {renderEstrellas(producto.estado)}
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-3">
                   <span className="text-2xl font-bold" style={{ color: 'var(--stumble-pink)' }}>
                     ${producto.precio}
                   </span>
@@ -194,6 +240,42 @@ export default function MisProductosPage() {
                       Disponible
                     </span>
                   )}
+                </div>
+                
+                {/* Botones de acción */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/productos/${producto._id}`);
+                    }}
+                    className="px-3 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                    style={{ backgroundColor: 'var(--stumble-cyan)' }}
+                  >
+                    Ver
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleVendido(producto._id, producto.vendido);
+                    }}
+                    className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      producto.vendido
+                        ? 'bg-yellow-100 text-yellow-800 border border-yellow-500'
+                        : 'bg-green-100 text-green-800 border border-green-500'
+                    }`}
+                  >
+                    {producto.vendido ? '↩️' : '✓'}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEliminar(producto._id);
+                    }}
+                    className="px-3 py-2 rounded-lg text-sm font-semibold text-red-600 border border-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </motion.div>
             ))}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import AgregarProductoModal from '@/components/AgregarProductoModal';
 import Image from 'next/image';
+import Loading from '@/components/Loading';
 
 interface Feria {
   _id: string;
@@ -110,11 +111,7 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen p-8 flex items-center justify-center">
-        <div className="text-white text-2xl">Cargando...</div>
-      </div>
-    );
+    return <Loading message="Cargando feria" />;
   }
 
   if (!feria) {

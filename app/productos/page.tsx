@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Loading from '@/components/Loading';
 
 interface Producto {
   _id: string;
@@ -75,7 +76,7 @@ export default function ProductosPage() {
         </motion.div>
 
         {loading ? (
-          <div className="text-center text-white text-xl">Cargando...</div>
+          <Loading message="Cargando productos" fullScreen={false} />
         ) : productos.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}

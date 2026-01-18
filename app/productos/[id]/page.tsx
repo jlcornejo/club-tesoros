@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
+import EditarProductoModal from '@/components/EditarProductoModal';
+import Loading from '@/components/Loading';
 
 interface Producto {
   _id: string;
@@ -15,14 +18,21 @@ interface Producto {
   vendedor: string;
   estado: number;
   feriaId: string;
+  userId: string;
+  vendido: boolean;
 }
 
 export default function ProductoDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [producto, setProducto] = useState<Producto | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [modalEditarOpen, setModalEditarOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const isOwner = session?.user && producto?.userId === (session.user as { id?: string }).id;
 
   useEffect(() => {
     if (params.id) {
@@ -44,12 +54,62 @@ export default function ProductoDetailPage() {
     }
   };
 
+  const handleEliminar = async () => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/productos/${params.id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        router.push('/mis-productos');
+      } else {
+        alert('Error al eliminar el producto');
+      }
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      alert('Error al eliminar el producto');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleToggleVendido = async () => {
+    if (!producto) return;
+
+    const nuevoEstado = !producto.vendido;
+    const mensaje = nuevoEstado 
+      ? '¿Marcar este producto como vendido?' 
+      : '¿Marcar este producto como disponible?';
+
+    if (!confirm(mensaje)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/productos/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendido: nuevoEstado }),
+      });
+
+      if (res.ok) {
+        fetchProducto();
+      } else {
+        alert('Error al actualizar el estado');
+      }
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+      alert('Error al actualizar el estado');
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl">Cargando...</div>
-      </div>
-    );
+    return <Loading message="Cargando producto" />;
   }
 
   if (!producto) {
@@ -170,6 +230,11 @@ export default function ProductoDetailPage() {
               <span className="text-5xl font-black" style={{ color: 'var(--stumble-pink)' }}>
                 ${producto.precio}
               </span>
+              {producto.vendido && (
+                <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  ✓ Vendido
+                </span>
+              )}
             </div>
 
             <div className="border-t-2 border-gray-200 pt-4">
@@ -178,25 +243,67 @@ export default function ProductoDetailPage() {
               </p>
             </div>
 
+            {/* Botones de acción */}
             <div className="flex gap-3 pt-4">
-              <button
-                onClick={() => router.back()}
-                className="flex-1 stumble-button-secondary"
-              >
-                Volver
-              </button>
-              <button
-                onClick={() => {
-                  // Aquí podrías agregar funcionalidad de contacto
-                  alert('Funcionalidad de contacto próximamente');
-                }}
-                className="flex-1 stumble-button"
-              >
-                Contactar vendedor
-              </button>
+              {isOwner ? (
+                <>
+                  <button
+                    onClick={handleToggleVendido}
+                    className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-colors ${
+                      producto.vendido
+                        ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-500 hover:bg-yellow-200'
+                        : 'bg-green-100 text-green-800 border-2 border-green-500 hover:bg-green-200'
+                    }`}
+                  >
+                    {producto.vendido ? '↩️ Marcar disponible' : '✓ Marcar vendido'}
+                  </button>
+                  <button
+                    onClick={() => setModalEditarOpen(true)}
+                    className="px-4 py-3 rounded-xl border-2 border-blue-500 text-blue-500 font-semibold hover:bg-blue-50 transition-colors"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={handleEliminar}
+                    disabled={deleting}
+                    className="px-4 py-3 rounded-xl border-2 border-red-500 text-red-500 font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    {deleting ? '...' : '🗑️'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => router.back()}
+                    className="flex-1 stumble-button-secondary"
+                  >
+                    Volver
+                  </button>
+                  {!producto.vendido && (
+                    <button
+                      onClick={() => {
+                        alert('Funcionalidad de contacto próximamente');
+                      }}
+                      className="flex-1 stumble-button"
+                    >
+                      Contactar vendedor
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </motion.div>
+
+        {/* Modal de editar */}
+        {isOwner && producto && (
+          <EditarProductoModal
+            isOpen={modalEditarOpen}
+            onClose={() => setModalEditarOpen(false)}
+            producto={producto}
+            onProductoActualizado={fetchProducto}
+          />
+        )}
       </div>
     </div>
   );

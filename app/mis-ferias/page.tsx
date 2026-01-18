@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Loading from '@/components/Loading';
 
 interface Feria {
   _id: string;
@@ -60,11 +61,7 @@ export default function MisFeriasPage() {
   };
 
   if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen p-8 flex items-center justify-center">
-        <div className="text-white text-2xl">Cargando...</div>
-      </div>
-    );
+    return <Loading message="Cargando mis ferias" />;
   }
 
   return (

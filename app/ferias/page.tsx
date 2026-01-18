@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Loading from '@/components/Loading';
 
 interface Feria {
   _id: string;
@@ -67,7 +68,7 @@ export default function FeriasPage() {
         </motion.div>
 
         {loading ? (
-          <div className="text-center text-white text-xl">Cargando...</div>
+          <Loading message="Cargando ferias" fullScreen={false} />
         ) : ferias.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
