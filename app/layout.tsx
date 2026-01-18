@@ -12,6 +12,13 @@ export const metadata: Metadata = {
     maximumScale: 5,
     userScalable: true,
   },
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: '1024x1024', type: 'image/png' },
+    ],
+    apple: '/icon.png',
+    shortcut: '/icon.png',
+  },
 };
 
 export default function RootLayout({
