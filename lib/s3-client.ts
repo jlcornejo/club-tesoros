@@ -35,14 +35,13 @@ export async function uploadImageToS3({
     Key: key,
     Body: file,
     ContentType: contentType,
-    // Hacer las imágenes públicas para lectura
-    ACL: 'public-read',
   });
 
   await s3Client.send(command);
 
   // Retornar la URL pública de la imagen
-  return `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`;
+  const region = process.env.AWS_REGION || 'us-east-1';
+  return `https://${BUCKET_NAME}.s3.${region}.amazonaws.com/${key}`;
 }
 
 export async function deleteImageFromS3(imageUrl: string): Promise<void> {

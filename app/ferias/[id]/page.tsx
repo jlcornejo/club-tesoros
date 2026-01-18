@@ -200,60 +200,64 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {productos.map((producto, index) => (
-                <motion.div
+                <Link
                   key={producto._id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + index * 0.05 }}
-                  className="stumble-card p-5 hover:scale-105 transition-transform"
+                  href={`/productos/${producto._id}`}
                 >
-                  {producto.imagenes && producto.imagenes.length > 0 ? (
-                    <div className="relative w-full h-48 mb-3 rounded-xl overflow-hidden">
-                      <Image
-                        src={producto.imagenes[0]}
-                        alt={producto.nombre}
-                        fill
-                        className="object-cover"
-                      />
-                      {producto.imagenes.length > 1 && (
-                        <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
-                          +{producto.imagenes.length - 1}
-                        </div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + index * 0.05 }}
+                    className="stumble-card p-5 hover:scale-105 transition-transform cursor-pointer"
+                  >
+                    {producto.imagenes && producto.imagenes.length > 0 ? (
+                      <div className="relative w-full h-48 mb-3 rounded-xl overflow-hidden">
+                        <Image
+                          src={producto.imagenes[0]}
+                          alt={producto.nombre}
+                          fill
+                          className="object-cover"
+                        />
+                        {producto.imagenes.length > 1 && (
+                          <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
+                            +{producto.imagenes.length - 1}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-5xl mb-3 text-center">
+                        {getCategoriaEmoji(producto.categoria)}
+                      </div>
+                    )}
+                    
+                    <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">
+                      {producto.nombre}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {producto.descripcion}
+                    </p>
+                    
+                    <div className="mb-2">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        {getEstadoProductoLabel(producto.estado)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-2xl font-bold" style={{ color: 'var(--stumble-pink)' }}>
+                        ${producto.precio}
+                      </span>
+                      {producto.vendido && (
+                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
+                          Vendido
+                        </span>
                       )}
                     </div>
-                  ) : (
-                    <div className="text-5xl mb-3 text-center">
-                      {getCategoriaEmoji(producto.categoria)}
-                    </div>
-                  )}
-                  
-                  <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">
-                    {producto.nombre}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {producto.descripcion}
-                  </p>
-                  
-                  <div className="mb-2">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      {getEstadoProductoLabel(producto.estado)}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-2xl font-bold" style={{ color: 'var(--stumble-pink)' }}>
-                      ${producto.precio}
-                    </span>
-                    {producto.vendido && (
-                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
-                        Vendido
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Vendedor: {producto.vendedor}
-                  </p>
-                </motion.div>
+                    <p className="text-xs text-gray-500">
+                      Vendedor: {producto.vendedor}
+                    </p>
+                  </motion.div>
+                </Link>
               ))}
             </div>
           )}
