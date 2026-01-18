@@ -131,6 +131,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground;
@@ -138,6 +139,8 @@
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
   /* Patrón de fondo animado tipo Stumble Guys - MÁS VIBRANTE */
@@ -166,12 +169,20 @@
 
 .stumble-card {
   background: white;
-  border-radius: 30px;
-  border: 5px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2), 0 12px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  border: 4px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2), 0 8px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .stumble-card {
+    border-radius: 30px;
+    border: 5px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2), 0 12px 30px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .stumble-card::before {
@@ -189,27 +200,40 @@
   left: 100%;
 }
 
-.stumble-card:hover {
-  transform: translateY(-10px) scale(1.03);
-  box-shadow: 0 12px 0 rgba(0, 0, 0, 0.2), 0 18px 40px rgba(0, 0, 0, 0.4);
+@media (min-width: 640px) {
+  .stumble-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.2), 0 18px 40px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .stumble-button {
   background: linear-gradient(135deg, var(--stumble-yellow) 0%, var(--stumble-orange) 100%);
-  border: 4px solid #FFFFFF;
+  border: 3px solid #FFFFFF;
   border-radius: 50px;
-  padding: 14px 32px;
+  padding: 12px 24px;
   font-weight: 900;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: white;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 6px 0 #CC5A00, 0 8px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 0 #CC5A00, 0 6px 15px rgba(0, 0, 0, 0.4);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   position: relative;
   overflow: hidden;
-  text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 640px) {
+  .stumble-button {
+    border: 4px solid #FFFFFF;
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    box-shadow: 0 6px 0 #CC5A00, 0 8px 20px rgba(0, 0, 0, 0.4);
+    letter-spacing: 1px;
+    text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+  }
 }
 
 .stumble-button::before {
@@ -241,18 +265,31 @@
 }
 
 .stumble-title {
-  font-size: 4rem;
+  font-size: 2.5rem;
   font-weight: 900;
   color: white;
   text-shadow: 
-    4px 4px 0 #000000,
-    -2px -2px 0 #000000,
-    2px -2px 0 #000000,
-    -2px 2px 0 #000000,
-    0 6px 20px rgba(0, 0, 0, 0.5);
+    3px 3px 0 #000000,
+    -1px -1px 0 #000000,
+    1px -1px 0 #000000,
+    -1px 1px 0 #000000,
+    0 4px 15px rgba(0, 0, 0, 0.5);
   animation: titleBounce 2s ease-in-out infinite;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   transform-style: preserve-3d;
+}
+
+@media (min-width: 640px) {
+  .stumble-title {
+    font-size: 4rem;
+    text-shadow: 
+      4px 4px 0 #000000,
+      -2px -2px 0 #000000,
+      2px -2px 0 #000000,
+      -2px 2px 0 #000000,
+      0 6px 20px rgba(0, 0, 0, 0.5);
+    letter-spacing: 2px;
+  }
 }
 
 @keyframes titleBounce {
@@ -264,18 +301,29 @@
 .stumble-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: linear-gradient(135deg, var(--stumble-yellow) 0%, var(--stumble-orange) 100%);
   color: white;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 50px;
-  border: 3px solid white;
+  border: 2px solid white;
   font-weight: 900;
-  font-size: 0.95rem;
-  box-shadow: 0 4px 0 #CC5A00, 0 6px 15px rgba(0, 0, 0, 0.4);
+  font-size: 0.8rem;
+  box-shadow: 0 3px 0 #CC5A00, 0 4px 10px rgba(0, 0, 0, 0.4);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 640px) {
+  .stumble-badge {
+    gap: 6px;
+    padding: 10px 20px;
+    border: 3px solid white;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 0 #CC5A00, 0 6px 15px rgba(0, 0, 0, 0.4);
+    letter-spacing: 1px;
+  }
 }
 
 /* Efectos de partículas flotantes */
@@ -292,10 +340,16 @@
 
 .floating-emoji {
   position: absolute;
-  font-size: 2rem;
+  font-size: 1.5rem;
   animation: float-particle 4s ease-in-out infinite;
   pointer-events: none;
   z-index: 1;
+}
+
+@media (min-width: 640px) {
+  .floating-emoji {
+    font-size: 2rem;
+  }
 }
 
 /* Input estilo Stumble Guys */
