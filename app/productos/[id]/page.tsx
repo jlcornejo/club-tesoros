@@ -13,7 +13,7 @@ interface Producto {
   precio: number;
   imagenes: string[];
   vendedor: string;
-  estado: string;
+  estado: number;
   feriaId: string;
 }
 
@@ -69,18 +69,28 @@ export default function ProductoDetailPage() {
     );
   }
 
-  const estadoEmoji = {
-    nuevo: '✨',
-    como_nuevo: '⭐',
-    usado: '👍',
-    para_reparar: '🔧',
+  const getEstadoTexto = (estrellas: number) => {
+    const textos = {
+      5: 'Nuevo',
+      4: 'Excelente estado',
+      3: 'Buen estado',
+      2: 'Estado regular',
+      1: 'Desgastado',
+      0: 'Para reparar',
+    };
+    return textos[estrellas as keyof typeof textos] || 'Sin especificar';
   };
 
-  const estadoTexto = {
-    nuevo: 'Nuevo',
-    como_nuevo: 'Como nuevo',
-    usado: 'Usado',
-    para_reparar: 'Para reparar',
+  const renderEstrellas = (cantidad: number) => {
+    return (
+      <div className="flex items-center gap-1">
+        {[...Array(5)].map((_, i) => (
+          <span key={i} className="text-xl sm:text-2xl">
+            {i < cantidad ? '⭐' : '☆'}
+          </span>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -142,9 +152,13 @@ export default function ProductoDetailPage() {
               <h1 className="text-3xl sm:text-4xl font-black mb-2" style={{ color: 'var(--stumble-pink)' }}>
                 {producto.nombre}
               </h1>
-              <div className="flex items-center gap-2 text-lg">
-                <span>{estadoEmoji[producto.estado as keyof typeof estadoEmoji]}</span>
-                <span className="font-semibold">{estadoTexto[producto.estado as keyof typeof estadoTexto]}</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  {renderEstrellas(producto.estado)}
+                </div>
+                <p className="text-gray-600 font-medium">
+                  {getEstadoTexto(producto.estado)}
+                </p>
               </div>
             </div>
 

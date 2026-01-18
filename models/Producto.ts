@@ -11,7 +11,7 @@ export interface IProducto {
   userId: string;
   feriaId: string;
   vendido: boolean;
-  estado: 'nuevo' | 'como_nuevo' | 'usado' | 'para_reparar';
+  estado: number; // 0-5 estrellas (0=para reparar, 5=nuevo)
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -70,10 +70,11 @@ const ProductoSchema = new Schema<IProducto>(
       default: false,
     },
     estado: {
-      type: String,
-      enum: ['nuevo', 'como_nuevo', 'usado', 'para_reparar'],
+      type: Number,
       required: [true, 'El estado del producto es requerido'],
-      default: 'usado',
+      min: [0, 'El estado mínimo es 0 estrellas'],
+      max: [5, 'El estado máximo es 5 estrellas'],
+      default: 3,
     },
   },
   {

@@ -25,7 +25,7 @@ interface Producto {
   vendedor: string;
   vendido: boolean;
   imagenes: string[];
-  estado: string;
+  estado: number;
 }
 
 export default function FeriaDetallePage({ params }: { params: Promise<{ id: string }> }) {
@@ -73,6 +73,18 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
     }
   };
 
+  const renderEstrellas = (cantidad: number) => {
+    return (
+      <div className="flex items-center gap-0.5">
+        {[...Array(5)].map((_, i) => (
+          <span key={i} className="text-sm">
+            {i < cantidad ? '⭐' : '☆'}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   const getCategoriaEmoji = (categoria: string) => {
     const emojis: Record<string, string> = {
       juguete: '🧸',
@@ -95,16 +107,6 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
-
-  const getEstadoProductoLabel = (estado: string) => {
-    const labels: Record<string, string> = {
-      nuevo: '✨ Nuevo',
-      como_nuevo: '⭐ Como nuevo',
-      usado: '👍 Usado',
-      para_reparar: '🔧 Para reparar',
-    };
-    return labels[estado] || estado;
   };
 
   if (loading) {
@@ -238,9 +240,7 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
                     </p>
                     
                     <div className="mb-2">
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        {getEstadoProductoLabel(producto.estado)}
-                      </span>
+                      {renderEstrellas(producto.estado)}
                     </div>
                     
                     <div className="flex justify-between items-center mb-2">

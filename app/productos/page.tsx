@@ -12,6 +12,7 @@ interface Producto {
   precio: number;
   vendedor: string;
   vendido: boolean;
+  estado: number;
 }
 
 export default function ProductosPage() {
@@ -34,6 +35,18 @@ export default function ProductosPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderEstrellas = (cantidad: number) => {
+    return (
+      <div className="flex items-center gap-0.5">
+        {[...Array(5)].map((_, i) => (
+          <span key={i} className="text-sm">
+            {i < cantidad ? '⭐' : '☆'}
+          </span>
+        ))}
+      </div>
+    );
   };
 
   const getCategoriaEmoji = (categoria: string) => {
@@ -96,6 +109,9 @@ export default function ProductosPage() {
                 <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                   {producto.descripcion}
                 </p>
+                <div className="mb-2">
+                  {renderEstrellas(producto.estado)}
+                </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-2xl font-bold" style={{ color: 'var(--stumble-pink)' }}>
                     ${producto.precio}

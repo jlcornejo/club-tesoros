@@ -22,7 +22,7 @@ export default function AgregarProductoModal({
     descripcion: '',
     categoria: 'juguete',
     precio: '',
-    estado: 'usado',
+    estado: 3,
   });
   const [imagenes, setImagenes] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -118,7 +118,7 @@ export default function AgregarProductoModal({
         descripcion: '',
         categoria: 'juguete',
         precio: '',
-        estado: 'usado',
+        estado: 3,
       });
       setImagenes([]);
       setPreviewUrls([]);
@@ -220,13 +220,15 @@ export default function AgregarProductoModal({
                   <select
                     required
                     value={formData.estado}
-                    onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, estado: parseInt(e.target.value) })}
                     className="w-full px-2 py-2 sm:px-4 sm:py-3 rounded-xl border-2 border-gray-300 focus:border-pink-500 focus:outline-none text-sm sm:text-base"
                   >
-                    <option value="nuevo">✨ Nuevo</option>
-                    <option value="como_nuevo">⭐ Como nuevo</option>
-                    <option value="usado">👍 Usado</option>
-                    <option value="para_reparar">🔧 Reparar</option>
+                    <option value="5">⭐⭐⭐⭐⭐ Nuevo</option>
+                    <option value="4">⭐⭐⭐⭐ Excelente</option>
+                    <option value="3">⭐⭐⭐ Bueno</option>
+                    <option value="2">⭐⭐ Regular</option>
+                    <option value="1">⭐ Desgastado</option>
+                    <option value="0">Para reparar</option>
                   </select>
                 </div>
               </div>
