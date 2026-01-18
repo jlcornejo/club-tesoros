@@ -20,7 +20,7 @@ const estadoMap: Record<string, number> = {
 };
 
 async function migrateEstadoProductos() {
-  const client = new MongoClient(MONGODB_URI);
+  const client = new MongoClient(MONGODB_URI!);
 
   try {
     console.log('🔌 Conectando a MongoDB...');
