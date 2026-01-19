@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface Stats {
   totalUsuarios: number;
@@ -36,6 +37,17 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -79,11 +91,21 @@ export default function AdminPage() {
       if (data.success) {
         setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
       } else {
-        alert(data.error || 'Error al cambiar rol');
+        setConfirmDialog({
+          isOpen: true,
+          title: '❌ Error',
+          message: data.error || 'Error al cambiar rol',
+          onConfirm: () => {},
+        });
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al cambiar rol');
+      setConfirmDialog({
+        isOpen: true,
+        title: '❌ Error',
+        message: 'Error al cambiar rol',
+        onConfirm: () => {},
+      });
     }
   };
 
@@ -250,6 +272,15 @@ export default function AdminPage() {
             ))}
           </div>
         </motion.div>
+
+        {/* Diálogo de confirmación */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+        />
       </div>
     </div>
   );

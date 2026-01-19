@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import Loading from '@/components/Loading';
 
 interface Producto {
@@ -27,6 +28,19 @@ export default function MisProductosPage() {
   const router = useRouter();
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    confirmColor?: 'pink' | 'green' | 'red' | 'yellow';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -49,24 +63,41 @@ export default function MisProductosPage() {
   };
 
   const handleEliminar = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: '🗑️ Eliminar producto',
+      message: '¿Estás seguro de que quieres eliminar este producto?',
+      confirmText: 'Eliminar',
+      confirmColor: 'red',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/productos/${id}`, {
+            method: 'DELETE',
+          });
 
-    try {
-      const res = await fetch(`/api/productos/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        fetchMisProductos();
-      } else {
-        alert('Error al eliminar el producto');
-      }
-    } catch (error) {
-      console.error('Error al eliminar producto:', error);
-      alert('Error al eliminar el producto');
-    }
+          if (res.ok) {
+            fetchMisProductos();
+          } else {
+            setConfirmDialog({
+              isOpen: true,
+              title: '❌ Error',
+              message: 'Error al eliminar el producto',
+              confirmText: 'OK',
+              onConfirm: () => {},
+            });
+          }
+        } catch (error) {
+          console.error('Error al eliminar producto:', error);
+          setConfirmDialog({
+            isOpen: true,
+            title: '❌ Error',
+            message: 'Error al eliminar el producto',
+            confirmText: 'OK',
+            onConfirm: () => {},
+          });
+        }
+      },
+    });
   };
 
   const handleToggleVendido = async (id: string, vendidoActual: boolean) => {
@@ -75,26 +106,43 @@ export default function MisProductosPage() {
       ? '¿Marcar como vendido?' 
       : '¿Marcar como disponible?';
 
-    if (!confirm(mensaje)) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: nuevoEstado ? '✓ Marcar como vendido' : '↩️ Marcar como disponible',
+      message: mensaje,
+      confirmText: nuevoEstado ? 'Marcar vendido' : 'Marcar disponible',
+      confirmColor: nuevoEstado ? 'green' : 'yellow',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/productos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vendido: nuevoEstado }),
+          });
 
-    try {
-      const res = await fetch(`/api/productos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vendido: nuevoEstado }),
-      });
-
-      if (res.ok) {
-        fetchMisProductos();
-      } else {
-        alert('Error al actualizar el estado');
-      }
-    } catch (error) {
-      console.error('Error al actualizar estado:', error);
-      alert('Error al actualizar el estado');
-    }
+          if (res.ok) {
+            fetchMisProductos();
+          } else {
+            setConfirmDialog({
+              isOpen: true,
+              title: '❌ Error',
+              message: 'Error al actualizar el estado',
+              confirmText: 'OK',
+              onConfirm: () => {},
+            });
+          }
+        } catch (error) {
+          console.error('Error al actualizar estado:', error);
+          setConfirmDialog({
+            isOpen: true,
+            title: '❌ Error',
+            message: 'Error al actualizar el estado',
+            confirmText: 'OK',
+            onConfirm: () => {},
+          });
+        }
+      },
+    });
   };
 
   const renderEstrellas = (cantidad: number) => {
@@ -281,6 +329,17 @@ export default function MisProductosPage() {
             ))}
           </div>
         )}
+
+        {/* Diálogo de confirmación */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          confirmText={confirmDialog.confirmText}
+          confirmColor={confirmDialog.confirmColor}
+        />
       </div>
     </div>
   );

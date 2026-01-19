@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function NuevaFeriaPage() {
   const router = useRouter();
@@ -14,6 +15,17 @@ export default function NuevaFeriaPage() {
     estado: 'planificada' as 'planificada' | 'activa' | 'finalizada',
   });
   const [loading, setLoading] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +43,21 @@ export default function NuevaFeriaPage() {
       if (data.success) {
         router.push('/ferias');
       } else {
-        alert('Error al crear la feria');
+        setConfirmDialog({
+          isOpen: true,
+          title: '❌ Error',
+          message: 'Error al crear la feria',
+          onConfirm: () => {},
+        });
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al crear la feria');
+      setConfirmDialog({
+        isOpen: true,
+        title: '❌ Error',
+        message: 'Error al crear la feria',
+        onConfirm: () => {},
+      });
     } finally {
       setLoading(false);
     }
@@ -127,6 +149,15 @@ export default function NuevaFeriaPage() {
             </button>
           </form>
         </motion.div>
+
+        {/* Diálogo de confirmación */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+        />
       </div>
     </div>
   );

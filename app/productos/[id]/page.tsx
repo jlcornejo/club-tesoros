@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import EditarProductoModal from '@/components/EditarProductoModal';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import Loading from '@/components/Loading';
 
 interface Producto {
@@ -31,6 +32,19 @@ export default function ProductoDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    confirmColor?: 'pink' | 'green' | 'red' | 'yellow';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   const isOwner = session?.user && producto?.userId === (session.user as { id?: string }).id;
 
@@ -55,27 +69,44 @@ export default function ProductoDetailPage() {
   };
 
   const handleEliminar = async () => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.')) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: '🗑️ Eliminar producto',
+      message: '¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      confirmColor: 'red',
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          const res = await fetch(`/api/productos/${params.id}`, {
+            method: 'DELETE',
+          });
 
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/productos/${params.id}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        router.push('/mis-productos');
-      } else {
-        alert('Error al eliminar el producto');
-      }
-    } catch (error) {
-      console.error('Error al eliminar producto:', error);
-      alert('Error al eliminar el producto');
-    } finally {
-      setDeleting(false);
-    }
+          if (res.ok) {
+            router.push('/mis-productos');
+          } else {
+            setConfirmDialog({
+              isOpen: true,
+              title: '❌ Error',
+              message: 'Error al eliminar el producto',
+              confirmText: 'OK',
+              onConfirm: () => {},
+            });
+          }
+        } catch (error) {
+          console.error('Error al eliminar producto:', error);
+          setConfirmDialog({
+            isOpen: true,
+            title: '❌ Error',
+            message: 'Error al eliminar el producto',
+            confirmText: 'OK',
+            onConfirm: () => {},
+          });
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
   };
 
   const handleToggleVendido = async () => {
@@ -86,26 +117,43 @@ export default function ProductoDetailPage() {
       ? '¿Marcar este producto como vendido?' 
       : '¿Marcar este producto como disponible?';
 
-    if (!confirm(mensaje)) {
-      return;
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: nuevoEstado ? '✓ Marcar como vendido' : '↩️ Marcar como disponible',
+      message: mensaje,
+      confirmText: nuevoEstado ? 'Marcar vendido' : 'Marcar disponible',
+      confirmColor: nuevoEstado ? 'green' : 'yellow',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/productos/${params.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vendido: nuevoEstado }),
+          });
 
-    try {
-      const res = await fetch(`/api/productos/${params.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vendido: nuevoEstado }),
-      });
-
-      if (res.ok) {
-        fetchProducto();
-      } else {
-        alert('Error al actualizar el estado');
-      }
-    } catch (error) {
-      console.error('Error al actualizar estado:', error);
-      alert('Error al actualizar el estado');
-    }
+          if (res.ok) {
+            fetchProducto();
+          } else {
+            setConfirmDialog({
+              isOpen: true,
+              title: '❌ Error',
+              message: 'Error al actualizar el estado',
+              confirmText: 'OK',
+              onConfirm: () => {},
+            });
+          }
+        } catch (error) {
+          console.error('Error al actualizar estado:', error);
+          setConfirmDialog({
+            isOpen: true,
+            title: '❌ Error',
+            message: 'Error al actualizar el estado',
+            confirmText: 'OK',
+            onConfirm: () => {},
+          });
+        }
+      },
+    });
   };
 
   if (loading) {
@@ -282,7 +330,13 @@ export default function ProductoDetailPage() {
                   {!producto.vendido && (
                     <button
                       onClick={() => {
-                        alert('Funcionalidad de contacto próximamente');
+                        setConfirmDialog({
+                          isOpen: true,
+                          title: '📱 Contactar vendedor',
+                          message: 'Funcionalidad de contacto próximamente',
+                          confirmText: 'OK',
+                          onConfirm: () => {},
+                        });
                       }}
                       className="flex-1 stumble-button"
                     >
@@ -304,6 +358,17 @@ export default function ProductoDetailPage() {
             onProductoActualizado={fetchProducto}
           />
         )}
+
+        {/* Diálogo de confirmación */}
+        <ConfirmDialog
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          confirmText={confirmDialog.confirmText}
+          confirmColor={confirmDialog.confirmColor}
+        />
       </div>
     </div>
   );
