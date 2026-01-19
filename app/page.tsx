@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { GiftIcon, BookIcon, ToyIcon, FeriaIcon, GameIcon, StarIcon } from '@/components/icons/StumbleIcons';
 
 // Generar partículas fuera del componente para evitar re-renders
@@ -19,6 +20,51 @@ const generateParticles = () => {
 
 export default function Home() {
   const [particles] = useState(generateParticles);
+  const { data: session } = useSession();
+  const [metricas, setMetricas] = useState({
+    misFerias: 0,
+    misProductos: 0,
+    productosVendidos: 0,
+    ganancias: 0,
+  });
+  const [loadingMetricas, setLoadingMetricas] = useState(true);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchMetricas();
+    } else {
+      setLoadingMetricas(false);
+    }
+  }, [session]);
+
+  const fetchMetricas = async () => {
+    try {
+      const [feriasRes, productosRes] = await Promise.all([
+        fetch('/api/ferias?misFerias=true'),
+        fetch('/api/productos?misProductos=true'),
+      ]);
+      
+      const feriasData = await feriasRes.json();
+      const productosData = await productosRes.json();
+      
+      if (feriasData.success && productosData.success) {
+        const productos = productosData.data as Array<{ vendido: boolean; precio: number }>;
+        const vendidos = productos.filter((p) => p.vendido);
+        const ganancias = vendidos.reduce((sum: number, p) => sum + p.precio, 0);
+        
+        setMetricas({
+          misFerias: feriasData.data.length,
+          misProductos: productos.length,
+          productosVendidos: vendidos.length,
+          ganancias,
+        });
+      }
+    } catch (error) {
+      console.error('Error al cargar métricas:', error);
+    } finally {
+      setLoadingMetricas(false);
+    }
+  };
 
   return (
     <div className="min-h-screen p-4 sm:p-8 relative">
@@ -90,6 +136,100 @@ export default function Home() {
             </span>
           </motion.div>
         </motion.div>
+
+        {/* Dashboard de métricas del usuario */}
+        {session?.user && !loadingMetricas && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-8 sm:mb-12"
+          >
+            <h2 className="text-2xl sm:text-3xl font-black text-white mb-4 text-center" style={{
+              textShadow: '3px 3px 0 rgba(0, 0, 0, 0.5)'
+            }}>
+              📊 Tu Resumen
+            </h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="stumble-card p-4 sm:p-5 text-center"
+              >
+                <div className="text-3xl sm:text-4xl mb-2">🎪</div>
+                <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--stumble-pink)' }}>
+                  {metricas.misFerias}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-600 font-semibold">Mis Ferias</div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="stumble-card p-4 sm:p-5 text-center"
+              >
+                <div className="text-3xl sm:text-4xl mb-2">📦</div>
+                <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--stumble-cyan)' }}>
+                  {metricas.misProductos}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-600 font-semibold">Mis Productos</div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="stumble-card p-4 sm:p-5 text-center"
+              >
+                <div className="text-3xl sm:text-4xl mb-2">✅</div>
+                <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--stumble-green)' }}>
+                  {metricas.productosVendidos}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-600 font-semibold">Vendidos</div>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="stumble-card p-4 sm:p-5 text-center"
+              >
+                <div className="text-3xl sm:text-4xl mb-2">💰</div>
+                <div className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--stumble-yellow)' }}>
+                  ${metricas.ganancias}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-600 font-semibold">Ganancias</div>
+              </motion.div>
+            </div>
+
+            {/* Accesos rápidos */}
+            <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
+              <Link href="/mis-ferias">
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  className="stumble-card p-4 cursor-pointer bg-gradient-to-r from-pink-100 to-purple-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">📋</div>
+                    <div>
+                      <div className="font-bold text-gray-800">Mis Ferias</div>
+                      <div className="text-xs text-gray-600">Gestiona tus ferias</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+
+              <Link href="/mis-productos">
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  className="stumble-card p-4 cursor-pointer bg-gradient-to-r from-cyan-100 to-blue-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">🎁</div>
+                    <div>
+                      <div className="font-bold text-gray-800">Mis Productos</div>
+                      <div className="text-xs text-gray-600">Gestiona tus productos</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            </div>
+          </motion.div>
+        )}
 
         {/* Cards principales */}
         <div className="grid md:grid-cols-2 gap-4 sm:gap-8 mb-8 sm:mb-12">

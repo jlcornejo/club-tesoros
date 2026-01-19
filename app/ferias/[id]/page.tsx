@@ -222,10 +222,26 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
                             +{producto.imagenes.length - 1}
                           </div>
                         )}
+                        {producto.vendido && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold">
+                              ✓ VENDIDO
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ) : (
-                      <div className="text-5xl mb-3 text-center">
-                        {getCategoriaEmoji(producto.categoria)}
+                      <div className="relative w-full h-48 mb-3 rounded-xl bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
+                        <div className="text-7xl">
+                          {getCategoriaEmoji(producto.categoria)}
+                        </div>
+                        {producto.vendido && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
+                            <span className="bg-red-500 text-white px-4 py-2 rounded-full text-sm font-bold">
+                              ✓ VENDIDO
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                     
@@ -244,9 +260,9 @@ export default function FeriaDetallePage({ params }: { params: Promise<{ id: str
                       <span className="text-2xl font-bold" style={{ color: 'var(--stumble-pink)' }}>
                         ${producto.precio}
                       </span>
-                      {producto.vendido && (
-                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
-                          Vendido
+                      {!producto.vendido && (
+                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+                          Disponible
                         </span>
                       )}
                     </div>
