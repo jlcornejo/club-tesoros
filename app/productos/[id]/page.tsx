@@ -32,6 +32,7 @@ export default function ProductoDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -154,6 +155,24 @@ export default function ProductoDetailPage() {
         }
       },
     });
+  };
+
+  const handleCompartir = () => {
+    const url = window.location.href;
+    const texto = `¡Mira este producto! ${producto?.nombre} - $${producto?.precio}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleCopiarLink = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Error al copiar:', error);
+    }
   };
 
   if (loading) {
@@ -292,59 +311,81 @@ export default function ProductoDetailPage() {
             </div>
 
             {/* Botones de acción */}
-            <div className="flex gap-3 pt-4">
-              {isOwner ? (
-                <>
-                  <button
-                    onClick={handleToggleVendido}
-                    className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-colors ${
-                      producto.vendido
-                        ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-500 hover:bg-yellow-200'
-                        : 'bg-green-100 text-green-800 border-2 border-green-500 hover:bg-green-200'
-                    }`}
-                  >
-                    {producto.vendido ? '↩️ Marcar disponible' : '✓ Marcar vendido'}
-                  </button>
-                  <button
-                    onClick={() => setModalEditarOpen(true)}
-                    className="px-4 py-3 rounded-xl border-2 border-blue-500 text-blue-500 font-semibold hover:bg-blue-50 transition-colors"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={handleEliminar}
-                    disabled={deleting}
-                    className="px-4 py-3 rounded-xl border-2 border-red-500 text-red-500 font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
-                  >
-                    {deleting ? '...' : '🗑️'}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => router.back()}
-                    className="flex-1 stumble-button-secondary"
-                  >
-                    Volver
-                  </button>
-                  {!producto.vendido && (
+            <div className="flex flex-col gap-3 pt-4">
+              {/* Botones de compartir - siempre visibles */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCompartir}
+                  className="flex-1 px-4 py-3 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <span className="text-xl">📱</span>
+                  Compartir por WhatsApp
+                </button>
+                <button
+                  onClick={handleCopiarLink}
+                  className="px-4 py-3 rounded-xl border-2 border-gray-400 text-gray-700 font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  title="Copiar link"
+                >
+                  <span className="text-xl">{copied ? '✓' : '🔗'}</span>
+                  {copied && <span className="text-sm">¡Copiado!</span>}
+                </button>
+              </div>
+
+              {/* Botones de gestión del producto */}
+              <div className="flex gap-3">
+                {isOwner ? (
+                  <>
                     <button
-                      onClick={() => {
-                        setConfirmDialog({
-                          isOpen: true,
-                          title: '📱 Contactar vendedor',
-                          message: 'Funcionalidad de contacto próximamente',
-                          confirmText: 'OK',
-                          onConfirm: () => {},
-                        });
-                      }}
-                      className="flex-1 stumble-button"
+                      onClick={handleToggleVendido}
+                      className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-colors ${
+                        producto.vendido
+                          ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-500 hover:bg-yellow-200'
+                          : 'bg-green-100 text-green-800 border-2 border-green-500 hover:bg-green-200'
+                      }`}
                     >
-                      Contactar vendedor
+                      {producto.vendido ? '↩️ Marcar disponible' : '✓ Marcar vendido'}
                     </button>
-                  )}
-                </>
-              )}
+                    <button
+                      onClick={() => setModalEditarOpen(true)}
+                      className="px-4 py-3 rounded-xl border-2 border-blue-500 text-blue-500 font-semibold hover:bg-blue-50 transition-colors"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={handleEliminar}
+                      disabled={deleting}
+                      className="px-4 py-3 rounded-xl border-2 border-red-500 text-red-500 font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
+                    >
+                      {deleting ? '...' : '🗑️'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => router.back()}
+                      className="flex-1 stumble-button-secondary"
+                    >
+                      Volver
+                    </button>
+                    {!producto.vendido && (
+                      <button
+                        onClick={() => {
+                          setConfirmDialog({
+                            isOpen: true,
+                            title: '📱 Contactar vendedor',
+                            message: 'Funcionalidad de contacto próximamente',
+                            confirmText: 'OK',
+                            onConfirm: () => {},
+                          });
+                        }}
+                        className="flex-1 stumble-button"
+                      >
+                        Contactar vendedor
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
