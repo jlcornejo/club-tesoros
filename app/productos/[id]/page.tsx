@@ -157,9 +157,30 @@ export default function ProductoDetailPage() {
     });
   };
 
-  const handleCompartir = () => {
+  const handleCompartir = async () => {
     const url = window.location.href;
     const texto = `¡Mira este producto! ${producto?.nombre} - $${producto?.precio}`;
+    
+    // Intentar usar Web Share API si está disponible (funciona mejor en móviles)
+    if (navigator.share && producto?.imagenes?.[0]) {
+      try {
+        // Descargar la imagen como blob
+        const response = await fetch(producto.imagenes[0]);
+        const blob = await response.blob();
+        const file = new File([blob], 'producto.jpg', { type: blob.type });
+        
+        await navigator.share({
+          title: producto.nombre,
+          text: `${texto}\n${url}`,
+          files: [file]
+        });
+        return;
+      } catch (error) {
+        console.log('Web Share no disponible o cancelado, usando WhatsApp directo');
+      }
+    }
+    
+    // Fallback: abrir WhatsApp con texto (sin imagen)
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
     window.open(whatsappUrl, '_blank');
   };
