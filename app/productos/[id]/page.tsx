@@ -159,49 +159,20 @@ export default function ProductoDetailPage() {
     });
   };
 
-  const handleCompartir = async () => {
+  const handleCompartir = () => {
     if (!producto || sharing) return;
 
     setSharing(true);
     const url = window.location.href;
     const texto = `🎁 ¡Mira este tesoro!\n\n${producto.nombre}\n💰 Precio: $${formatPrice(producto.precio)}\n⭐ Estado: ${getEstadoTexto(producto.estado)}\n\n👉 Ver más detalles:`;
 
-    // Verificar si el navegador soporta Web Share API con archivos
-    const canShareFiles = typeof navigator.share !== 'undefined' && typeof navigator.canShare !== 'undefined' && producto.imagenes.length > 0;
-
-    if (canShareFiles) {
-      try {
-        // Intentar descargar la primera imagen como blob
-        const response = await fetch(producto.imagenes[0]);
-        
-        if (response.ok) {
-          const blob = await response.blob();
-          const fileName = `producto-${producto._id}.jpg`;
-          const file = new File([blob], fileName, { type: blob.type });
-
-          // Verificar si se puede compartir este archivo
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: producto.nombre,
-              text: texto,
-              url: url,
-              files: [file],
-            });
-            setSharing(false);
-            return; // Éxito, salir de la función
-          }
-        }
-      } catch (error) {
-        console.log('Web Share API no disponible o error:', error);
-        // Continuar con el fallback
-      }
-    }
-
-    // Fallback: Abrir WhatsApp con link (método actual)
+    // Abrir WhatsApp con link
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
     window.open(whatsappUrl, '_blank');
-    setSharing(false);
+    
+    setTimeout(() => setSharing(false), 1000);
   };
+
 
   const handleCopiarLink = async () => {
     const url = window.location.href;
