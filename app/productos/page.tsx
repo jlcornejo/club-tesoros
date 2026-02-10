@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import Loading from '@/components/Loading';
+import { formatPrice } from '@/lib/utils';
 
 interface Producto {
   _id: string;
@@ -293,7 +294,7 @@ export default function ProductosPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-xl sm:text-2xl font-black" style={{ color: 'var(--stumble-pink)' }}>
-                          ${producto.precio}
+                          ${formatPrice(producto.precio)}
                         </span>
                         {!producto.vendido && (
                           <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">

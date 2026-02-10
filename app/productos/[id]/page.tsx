@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 import EditarProductoModal from '@/components/EditarProductoModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import Loading from '@/components/Loading';
+import { formatPrice } from '@/lib/utils';
 
 interface Producto {
   _id: string;
@@ -54,6 +55,48 @@ export default function ProductoDetailPage() {
       fetchProducto();
     }
   }, [params.id]);
+
+  // Actualizar meta tags cuando se carga el producto
+  useEffect(() => {
+    if (producto) {
+      // Actualizar el título de la página
+      document.title = `${producto.nombre} - $${producto.precio} | Club Tesoros`;
+      
+      // Actualizar meta tags para Open Graph (WhatsApp, Facebook, etc.)
+      updateMetaTags(producto);
+    }
+  }, [producto]);
+
+  const updateMetaTags = (producto: Producto) => {
+    const url = window.location.href;
+    const descripcion = producto.descripcion.substring(0, 200);
+    const imagen = producto.imagenes[0] || '';
+
+    // Eliminar meta tags existentes
+    const existingTags = document.querySelectorAll('meta[property^="og:"], meta[name="twitter:"]');
+    existingTags.forEach(tag => tag.remove());
+
+    // Crear nuevos meta tags
+    const metaTags = [
+      { property: 'og:title', content: `${producto.nombre} - $${producto.precio}` },
+      { property: 'og:description', content: descripcion },
+      { property: 'og:image', content: imagen },
+      { property: 'og:url', content: url },
+      { property: 'og:type', content: 'product' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: `${producto.nombre} - $${producto.precio}` },
+      { name: 'twitter:description', content: descripcion },
+      { name: 'twitter:image', content: imagen },
+    ];
+
+    metaTags.forEach(tag => {
+      const meta = document.createElement('meta');
+      if (tag.property) meta.setAttribute('property', tag.property);
+      if (tag.name) meta.setAttribute('name', tag.name);
+      meta.setAttribute('content', tag.content);
+      document.head.appendChild(meta);
+    });
+  };
 
   const fetchProducto = async () => {
     try {
@@ -157,33 +200,12 @@ export default function ProductoDetailPage() {
     });
   };
 
-  const handleCompartir = async () => {
-    const url = window.location.href;
-    const texto = `¡Mira este producto! ${producto?.nombre} - $${producto?.precio}`;
-    
-    // Intentar usar Web Share API si está disponible (funciona mejor en móviles)
-    if (navigator.share && producto?.imagenes?.[0]) {
-      try {
-        // Descargar la imagen como blob
-        const response = await fetch(producto.imagenes[0]);
-        const blob = await response.blob();
-        const file = new File([blob], 'producto.jpg', { type: blob.type });
-        
-        await navigator.share({
-          title: producto.nombre,
-          text: `${texto}\n${url}`,
-          files: [file]
-        });
-        return;
-      } catch (error) {
-        console.log('Web Share no disponible o cancelado, usando WhatsApp directo');
-      }
-    }
-    
-    // Fallback: abrir WhatsApp con texto (sin imagen)
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
-    window.open(whatsappUrl, '_blank');
-  };
+  const handleCompartir = () => {
+      const url = window.location.href;
+      const texto = `¡Mira este producto! ${producto?.nombre} - $${producto?.precio}`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
+      window.open(whatsappUrl, '_blank');
+    };
 
   const handleCopiarLink = async () => {
     const url = window.location.href;
@@ -316,7 +338,7 @@ export default function ProductoDetailPage() {
 
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black" style={{ color: 'var(--stumble-pink)' }}>
-                ${producto.precio}
+                ${formatPrice(producto.precio)}
               </span>
               {producto.vendido && (
                 <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
