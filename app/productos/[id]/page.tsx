@@ -56,48 +56,6 @@ export default function ProductoDetailPage() {
     }
   }, [params.id]);
 
-  // Actualizar meta tags cuando se carga el producto
-  useEffect(() => {
-    if (producto) {
-      // Actualizar el título de la página
-      document.title = `${producto.nombre} - $${producto.precio} | Club Tesoros`;
-      
-      // Actualizar meta tags para Open Graph (WhatsApp, Facebook, etc.)
-      updateMetaTags(producto);
-    }
-  }, [producto]);
-
-  const updateMetaTags = (producto: Producto) => {
-    const url = window.location.href;
-    const descripcion = producto.descripcion.substring(0, 200);
-    const imagen = producto.imagenes[0] || '';
-
-    // Eliminar meta tags existentes
-    const existingTags = document.querySelectorAll('meta[property^="og:"], meta[name="twitter:"]');
-    existingTags.forEach(tag => tag.remove());
-
-    // Crear nuevos meta tags
-    const metaTags = [
-      { property: 'og:title', content: `${producto.nombre} - $${producto.precio}` },
-      { property: 'og:description', content: descripcion },
-      { property: 'og:image', content: imagen },
-      { property: 'og:url', content: url },
-      { property: 'og:type', content: 'product' },
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: `${producto.nombre} - $${producto.precio}` },
-      { name: 'twitter:description', content: descripcion },
-      { name: 'twitter:image', content: imagen },
-    ];
-
-    metaTags.forEach(tag => {
-      const meta = document.createElement('meta');
-      if (tag.property) meta.setAttribute('property', tag.property);
-      if (tag.name) meta.setAttribute('name', tag.name);
-      meta.setAttribute('content', tag.content);
-      document.head.appendChild(meta);
-    });
-  };
-
   const fetchProducto = async () => {
     try {
       const res = await fetch(`/api/productos/${params.id}`);
