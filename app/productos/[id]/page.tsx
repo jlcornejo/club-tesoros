@@ -34,6 +34,7 @@ export default function ProductoDetailPage() {
   const [modalEditarOpen, setModalEditarOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -158,12 +159,49 @@ export default function ProductoDetailPage() {
     });
   };
 
-  const handleCompartir = () => {
-      const url = window.location.href;
-      const texto = `¡Mira este producto! ${producto?.nombre} - $${producto?.precio}`;
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
-      window.open(whatsappUrl, '_blank');
-    };
+  const handleCompartir = async () => {
+    if (!producto || sharing) return;
+
+    setSharing(true);
+    const url = window.location.href;
+    const texto = `🎁 ¡Mira este tesoro!\n\n${producto.nombre}\n💰 Precio: $${formatPrice(producto.precio)}\n⭐ Estado: ${getEstadoTexto(producto.estado)}\n\n👉 Ver más detalles:`;
+
+    // Verificar si el navegador soporta Web Share API con archivos
+    const canShareFiles = typeof navigator.share !== 'undefined' && typeof navigator.canShare !== 'undefined' && producto.imagenes.length > 0;
+
+    if (canShareFiles) {
+      try {
+        // Intentar descargar la primera imagen como blob
+        const response = await fetch(producto.imagenes[0]);
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const fileName = `producto-${producto._id}.jpg`;
+          const file = new File([blob], fileName, { type: blob.type });
+
+          // Verificar si se puede compartir este archivo
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: producto.nombre,
+              text: texto,
+              url: url,
+              files: [file],
+            });
+            setSharing(false);
+            return; // Éxito, salir de la función
+          }
+        }
+      } catch (error) {
+        console.log('Web Share API no disponible o error:', error);
+        // Continuar con el fallback
+      }
+    }
+
+    // Fallback: Abrir WhatsApp con link (método actual)
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
+    window.open(whatsappUrl, '_blank');
+    setSharing(false);
+  };
 
   const handleCopiarLink = async () => {
     const url = window.location.href;
@@ -317,10 +355,11 @@ export default function ProductoDetailPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleCompartir}
-                  className="flex-1 px-4 py-3 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                  disabled={sharing}
+                  className="flex-1 px-4 py-3 rounded-xl bg-green-500 text-white font-semibold hover:bg-green-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className="text-xl">📱</span>
-                  Compartir por WhatsApp
+                  <span className="text-xl">{sharing ? '⏳' : '📱'}</span>
+                  {sharing ? 'Compartiendo...' : 'Compartir'}
                 </button>
                 <button
                   onClick={handleCopiarLink}
