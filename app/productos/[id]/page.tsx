@@ -159,9 +159,10 @@ export default function ProductoDetailPage() {
   };
 
   const handleCompartir = () => {
-      const url = window.location.href;
+      // Usar la ruta /share que tiene los meta tags optimizados
+      const shareUrl = `${window.location.origin}/share/producto/${params.id}`;
       const texto = `¡Mira este producto! ${producto?.nombre} - $${producto?.precio}`;
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + url)}`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto + '\n' + shareUrl)}`;
       window.open(whatsappUrl, '_blank');
     };
 
